@@ -34,22 +34,23 @@ lookup(Trie, [K1 | Kpai]) ->
 traversal(Trie) ->
     traversal(Trie, "", "").
 
+
 traversal(Trie, Path, Kvs) ->
+    Data = maps:get(data, Trie),
     case map_size(maps:get(children, Trie)) of
         0 ->
-            Data = maps:get(data, Trie),
             case Data of
                 nil -> Kvs;
-                % _ -> [{Path, Data} | Kvs]
                 _ -> Kvs ++ [{Path, Data}]
             end;
         _ ->
-            case maps:get(data, Trie) of
+            case Data of
                 nil -> Kvs2 = Kvs;
-                % Data -> Kvs2 = [{Path, Data} | Kvs]
-                Data -> Kvs2 = Kvs ++ [{Path, Data}]
+                _ ->
+                    Kvs2 = [{Path, Data} | Kvs]
             end,
             Children = maps:get(children, Trie),
-            Childlist = maps:keys(Children),
-            lists:flatten([traversal(maps:get(Child, Children), Path ++ [Child], Kvs2) || Child <- Childlist])
+            lists:foldl(fun(Child, Ret) ->
+                                Ret ++ traversal(maps:get(Child, Children), Path ++ [Child], "")
+                        end, Kvs2, maps:keys(Children))
     end.
