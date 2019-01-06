@@ -1,6 +1,6 @@
 -module(trie).
 
--export([new/0, insert/3, lookup/2, traversal/1]).
+-export([new/0, insert/3, lookup/2, traversal/1, traversal_limit/2]).
 
 new() ->
     #{children => #{}, data => nil}.
@@ -53,4 +53,36 @@ traversal(Trie, Path, Kvs) ->
             lists:foldl(fun(Child, Ret) ->
                                 Ret ++ traversal(maps:get(Child, Children), Path ++ [Child], "")
                         end, Kvs2, maps:keys(Children))
+    end.
+
+
+traversal_limit(Trie, MaxCnt) ->
+    traversal_limit(Trie, "", "", MaxCnt, 0).
+
+
+traversal_limit(_, _, Kvs, MaxCnt, Cnt) when Cnt >= MaxCnt ->
+    {Kvs, Cnt};
+traversal_limit(Trie, Path, Kvs, MaxCnt, Cnt) ->
+    Data = maps:get(data, Trie),
+    case map_size(maps:get(children, Trie)) of
+        0 ->
+            case Data of
+                nil -> {Kvs, Cnt};
+                _ ->
+                    {Kvs ++ [{Path, Data}], Cnt + 1}
+            end;
+        _ ->
+            case Data of
+                nil ->
+                    Cnt2 = Cnt,
+                    Kvs2 = Kvs;
+                _ ->
+                    Cnt2 = Cnt + 1,
+                    Kvs2 = [{Path, Data} | Kvs]
+            end,
+            Children = maps:get(children, Trie),
+            lists:foldl(fun(Child, Ret) ->
+                                Next = traversal_limit(maps:get(Child, Children), Path ++ [Child], "", MaxCnt, erlang:element(2, Ret)),
+                                {erlang:element(1, Ret) ++ erlang:element(1, Next), erlang:element(2, Next)}
+                        end, {Kvs2, Cnt2}, maps:keys(Children))
     end.
