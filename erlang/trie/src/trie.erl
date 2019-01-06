@@ -1,13 +1,26 @@
 -module(trie).
 
+%% API exports
 -export([new/0, insert/3, lookup/2, traversal/1, traversal_limit/2]).
 
+-define(TRIE, ?MODULE).
+
+-record(?TRIE, {children,
+                data:: term()}).
+
+-type tree() :: #?TRIE{}.
+
+%%====================================================================
+%% API functions
+%%====================================================================
+
+-spec new() -> tree().
 new() ->
     #{children => #{}, data => nil}.
 
+-spec insert(tree(), list(), term()) -> tree().
 insert(Trie, [], Data) ->
     Trie#{data => Data};
-
 insert(Trie, [K1 | Kpai], Data) ->
     Child = maps:get(children, Trie),
     case maps:find(K1, Child) of
@@ -17,10 +30,9 @@ insert(Trie, [K1 | Kpai], Data) ->
             Trie#{children => maps:put(K1, insert(new(), Kpai, Data), Child)}
     end.
 
-
+-spec lookup(tree(), list()) -> term().
 lookup(Trie, []) ->
     maps:get(data, Trie);
-
 lookup(Trie, [K1 | Kpai]) ->
     Child = maps:get(children, Trie),
     case maps:find(K1, Child) of
@@ -30,10 +42,18 @@ lookup(Trie, [K1 | Kpai]) ->
             undefined
     end.
 
-
+-spec traversal(tree()) -> list().
 traversal(Trie) ->
     traversal(Trie, "", "").
 
+
+-spec traversal_limit(tree(), number()) -> list().
+traversal_limit(Trie, MaxCnt) ->
+    traversal_limit(Trie, "", "", MaxCnt, 0).
+
+%%====================================================================
+%% Internal functions
+%%====================================================================
 
 traversal(Trie, Path, Kvs) ->
     Data = maps:get(data, Trie),
@@ -54,10 +74,6 @@ traversal(Trie, Path, Kvs) ->
                                 Ret ++ traversal(maps:get(Child, Children), Path ++ [Child], "")
                         end, Kvs2, maps:keys(Children))
     end.
-
-
-traversal_limit(Trie, MaxCnt) ->
-    traversal_limit(Trie, "", "", MaxCnt, 0).
 
 
 traversal_limit(_, _, Kvs, MaxCnt, Cnt) when Cnt >= MaxCnt ->
