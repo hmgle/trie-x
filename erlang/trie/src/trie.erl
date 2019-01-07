@@ -1,7 +1,7 @@
 -module(trie).
 
 %% API exports
--export([new/0, insert/3, lookup/2, traversal/1, traversal_limit/2]).
+-export([new/0, insert/3, lookup/2, traversal/1, traversal_limit/2, expand/3]).
 
 -define(TRIE, ?MODULE).
 
@@ -50,6 +50,19 @@ traversal(Trie) ->
 -spec traversal_limit(tree(), number()) -> list().
 traversal_limit(Trie, MaxCnt) ->
     traversal_limit(Trie, "", "", MaxCnt, 0).
+
+-spec expand(tree(), list(), number()) -> list().
+expand(Trie, [], N) ->
+    traversal_limit(Trie, N);
+expand(Trie, [K1 | Kpai], N) ->
+    Child = maps:get(children, Trie),
+    case maps:find(K1, Child) of
+        {ok, Value} ->
+            expand(Value, Kpai, N);
+        error ->
+            undefined
+    end.
+
 
 %%====================================================================
 %% Internal functions
