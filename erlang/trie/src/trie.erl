@@ -52,16 +52,8 @@ traversal_limit(Trie, MaxCnt) ->
     traversal_limit(Trie, "", "", MaxCnt, 0).
 
 -spec expand(tree(), list(), number()) -> list().
-expand(Trie, [], N) ->
-    traversal_limit(Trie, N);
-expand(Trie, [K1 | Kpai], N) ->
-    Child = maps:get(children, Trie),
-    case maps:find(K1, Child) of
-        {ok, Value} ->
-            expand(Value, Kpai, N);
-        error ->
-            undefined
-    end.
+expand(Trie, Prefix, N) ->
+    expand(Trie, Prefix, N, Prefix).
 
 
 %%====================================================================
@@ -114,4 +106,30 @@ traversal_limit(Trie, Path, Kvs, MaxCnt, Cnt) ->
                                 Next = traversal_limit(maps:get(Child, Children), Path ++ [Child], "", MaxCnt, erlang:element(2, Ret)),
                                 {erlang:element(1, Ret) ++ erlang:element(1, Next), erlang:element(2, Next)}
                         end, {Kvs2, Cnt2}, maps:keys(Children))
+    end.
+
+
+expand(Trie, [], N, Prefix) ->
+    add_prefix(traversal_limit(Trie, N), Prefix);
+expand(Trie, [K1 | Kpai], N, Prefix) ->
+    Child = maps:get(children, Trie),
+    case maps:find(K1, Child) of
+        {ok, Value} ->
+            expand(Value, Kpai, N, Prefix);
+        error ->
+            undefined
+    end.
+
+
+add_prefix(Ret, Prefix) ->
+    case Ret of
+        undefined ->
+            undefined;
+        {Kvs, Cnt} ->
+            Kvs2 = lists:map(fun({K, V}) ->
+                                     {Prefix ++ K, V}
+                             end, Kvs),
+            {Kvs2, Cnt};
+        _ ->
+            undefined
     end.
