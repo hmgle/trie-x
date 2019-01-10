@@ -1,5 +1,5 @@
-{application, trie,
- [{description, "An OTP library"},
+{application, trie_demo,
+ [{description, "An escript"},
   {vsn, "0.1.0"},
   {registered, []},
   {applications,
