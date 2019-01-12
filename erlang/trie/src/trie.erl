@@ -61,7 +61,7 @@ expand(Trie, Prefix, N) ->
 scan_content(Content, Trie) ->
     case Content of
         [] -> [];
-        [H | T] -> scan_content(H, T, 0, Trie, [], 0)
+        [H | T] -> lists:reverse(scan_content([H], T, 0, Trie, [], 0))
     end.
 
 %%====================================================================
@@ -157,23 +157,23 @@ scan_content(K, Remain, OffsetRemain, Trie, Ret, Offset)
     case lookup(Trie, K) of
         undefined ->
             [RemainH | RemainT] = Remain,
-            scan_content(RemainH, RemainT, 0, Trie, Ret, Offset + 1);
+            scan_content([RemainH], RemainT, 0, Trie, Ret, Offset + 1);
         nil ->
-            scan_content(K ++ lists:nth(OffsetRemain + 1, Remain), Remain,
+            scan_content(K ++ [lists:nth(OffsetRemain + 1, Remain)], Remain,
                          OffsetRemain + 1, Trie, Ret, Offset);
         Data ->
             Ret2 = [{{K, Data}, Offset} | Ret],
-            scan_content(K ++ lists:nth(OffsetRemain + 1, Remain), Remain,
+            scan_content(K ++ [lists:nth(OffsetRemain + 1, Remain)], Remain,
                          OffsetRemain + 1, Trie, Ret2, Offset)
     end;
 scan_content(K, Remain, _OffsetRemain, Trie, Ret, Offset) ->
     [RemainH | RemainT] = Remain,
     case lookup(Trie, K) of
         undefined ->
-            scan_content(RemainH, RemainT, 0, Trie, Ret, Offset + 1);
+            scan_content([RemainH], RemainT, 0, Trie, Ret, Offset + 1);
         nil ->
-            scan_content(RemainH, RemainT, 0, Trie, Ret, Offset + 1);
+            scan_content([RemainH], RemainT, 0, Trie, Ret, Offset + 1);
         Data ->
             Ret2 = [{{K, Data}, Offset} | Ret],
-            scan_content(RemainH, RemainT, 0, Trie, Ret2, Offset + 1)
+            scan_content([RemainH], RemainT, 0, Trie, Ret2, Offset + 1)
     end.
