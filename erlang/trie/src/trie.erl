@@ -1,7 +1,8 @@
 -module(trie).
 
 %% API exports
--export([new/0, insert/3, lookup/2, traversal/1, traversal_limit/2, expand/3]).
+-export([new/0, insert/3, lookup/2, traversal/1, traversal_limit/2, expand/3,
+        scan_content/2]).
 
 -define(TRIE, ?MODULE).
 
@@ -55,6 +56,13 @@ traversal_limit(Trie, MaxCnt) ->
 expand(Trie, Prefix, N) ->
     expand(Trie, Prefix, N, Prefix).
 
+
+- spec scan_content(list(), tree()) -> list().
+scan_content(Content, Trie) ->
+    case Content of
+        [] -> [];
+        [H | T] -> scan_content(H, T, 0, Trie, [], 0)
+    end.
 
 %%====================================================================
 %% Internal functions
@@ -132,4 +140,40 @@ add_prefix(Ret, Prefix) ->
             {Kvs2, Cnt};
         _ ->
             undefined
+    end.
+
+
+scan_content(K, [], _, Trie, Ret, Offset) ->
+    case lookup(Trie, K) of
+        undefined ->
+            Ret;
+        nil ->
+            Ret;
+        Data ->
+            [{{K, Data}, Offset} | Ret]
+    end;
+scan_content(K, Remain, OffsetRemain, Trie, Ret, Offset)
+            when length(Remain) > OffsetRemain ->
+    case lookup(Trie, K) of
+        undefined ->
+            [RemainH | RemainT] = Remain,
+            scan_content(RemainH, RemainT, 0, Trie, Ret, Offset + 1);
+        nil ->
+            scan_content(K ++ lists:nth(OffsetRemain + 1, Remain), Remain,
+                         OffsetRemain + 1, Trie, Ret, Offset);
+        Data ->
+            Ret2 = [{{K, Data}, Offset} | Ret],
+            scan_content(K ++ lists:nth(OffsetRemain + 1, Remain), Remain,
+                         OffsetRemain + 1, Trie, Ret2, Offset)
+    end;
+scan_content(K, Remain, _OffsetRemain, Trie, Ret, Offset) ->
+    [RemainH | RemainT] = Remain,
+    case lookup(Trie, K) of
+        undefined ->
+            scan_content(RemainH, RemainT, 0, Trie, Ret, Offset + 1);
+        nil ->
+            scan_content(RemainH, RemainT, 0, Trie, Ret, Offset + 1);
+        Data ->
+            Ret2 = [{{K, Data}, Offset} | Ret],
+            scan_content(RemainH, RemainT, 0, Trie, Ret2, Offset + 1)
     end.
