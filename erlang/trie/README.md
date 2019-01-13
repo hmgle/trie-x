@@ -1,9 +1,14 @@
 trie
 =====
 
-An OTP library
+## Build
 
-Build
------
+```console
+$ make
+```
 
-    $ rebar3 compile
+## Run Demo
+
+```console
+$ make run
+```
