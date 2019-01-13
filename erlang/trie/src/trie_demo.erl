@@ -43,7 +43,7 @@ build_trie_from_filename(Filename) ->
 file2trie(File, T) ->
     case file:read_line(File) of
         {ok, Line} ->
-            L2 = unicode:characters_to_list(iolist_to_binary(string:trim(Line))),
+            L2 = string:trim(unicode:characters_to_list(iolist_to_binary(Line))),
             T2 = trie:insert(T, L2, 1),
             file2trie(File, T2);
         _Eof ->
