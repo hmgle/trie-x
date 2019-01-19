@@ -19,7 +19,7 @@
 new() ->
     #{children => #{}, data => nil}.
 
--spec insert(tree(), list(), term()) -> tree().
+-spec insert(tree(), string(), term()) -> tree().
 insert(Trie, [], Data) ->
     Trie#{data => Data};
 insert(Trie, [K1 | Kpai], Data) ->
@@ -31,7 +31,7 @@ insert(Trie, [K1 | Kpai], Data) ->
             Trie#{children => maps:put(K1, insert(new(), Kpai, Data), Child)}
     end.
 
--spec lookup(tree(), list()) -> term().
+-spec lookup(tree(), string()) -> term().
 lookup(Trie, []) ->
     maps:get(data, Trie);
 lookup(Trie, [K1 | Kpai]) ->
@@ -52,12 +52,12 @@ traversal(Trie) ->
 traversal_limit(Trie, MaxCnt) ->
     traversal_limit(Trie, "", "", MaxCnt, 0).
 
--spec expand(tree(), list(), number()) -> list().
+-spec expand(tree(), string(), number()) -> list().
 expand(Trie, Prefix, N) ->
     expand(Trie, Prefix, N, Prefix).
 
 
-- spec scan_content(list(), tree()) -> list().
+- spec scan_content(string(), tree()) -> list().
 scan_content(Content, Trie) ->
     case Content of
         [] -> [];
