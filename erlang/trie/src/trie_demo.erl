@@ -9,6 +9,7 @@
 
 %% escript Entry point
 main([EnglishWordsPath, BadWordsPath, SensitiveWordsPath]) ->
+    io:setopts([{encoding, unicode}]),
     EnWordTrie = build_trie_from_filename(EnglishWordsPath),
     BadWordTrie = build_trie_from_filename(BadWordsPath),
     SenWordTrie = build_trie_from_filename(SensitiveWordsPath),
@@ -20,7 +21,13 @@ main([EnglishWordsPath, BadWordsPath, SensitiveWordsPath]) ->
 
     Content = "近期发现为数不少的网络评论员及各大媒体网站删帖部门的工作人员",
     SenRet = trie:scan_content(Content, SenWordTrie),
-    io:format("sensitive words: ~w~n", [SenRet]),
+    io:format("~ts~n*sensitive words*:~n", [Content]),
+    print(SenRet),
+
+    ContentEn = "What does lemon party mean? In a brief filed ahead of oral arguments, the state argued that the law does not ban 18- to 20-year-old women from erotic dancing, which is protected under the First Amendment.",
+    SenEnRet = trie:scan_content(ContentEn, BadWordTrie),
+    io:format("~ts~n*sensitive words*:~n", [ContentEn]),
+    print(SenEnRet),
 
     erlang:halt(0);
 main(_) ->
@@ -50,3 +57,9 @@ file2trie(File, T) ->
             T
     end.
 
+print(Result) ->
+    lists:foreach(fun(Item) ->
+                          {{SenStr, Val}, Pos} = Item,
+                          io:format("\t'~ts', val: ~p, position: ~p~n",
+                                    [SenStr, Val, Pos])
+                  end, Result).
