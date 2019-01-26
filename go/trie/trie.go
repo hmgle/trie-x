@@ -7,7 +7,7 @@ type Trie struct {
 	Val      int
 }
 
-func New() *Trie { return &Trie{} }
+func New() *Trie { return &Trie{ChildRen: make(map[rune]*Trie)} }
 
 func (t *Trie) Insert(word string, val int) {
 	if word == "" {
@@ -26,6 +26,9 @@ func (t *Trie) Insert(word string, val int) {
 
 func (t *Trie) Lookup(word string) (val int, err error) {
 	if word == "" {
+		if t.Val != 0 {
+			return t.Val, nil
+		}
 		return t.Val, fmt.Errorf("null")
 	}
 	chars := []rune(word)
