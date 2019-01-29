@@ -18,9 +18,8 @@ func (t *Trie) Insert(word string, val int) {
 	if child, ok := t.ChildRen[chars[0]]; ok {
 		child.Insert(string(chars[1:]), val)
 	} else {
-		newChild := New()
-		newChild.Insert(string(chars[1:]), val)
-		t.ChildRen[chars[0]] = newChild
+		t.ChildRen[chars[0]] = New()
+		t.ChildRen[chars[0]].Insert(string(chars[1:]), val)
 	}
 }
 
