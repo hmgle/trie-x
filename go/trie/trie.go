@@ -7,8 +7,10 @@ type Trie struct {
 	Val      int
 }
 
+// New return an empty trie.
 func New() *Trie { return &Trie{ChildRen: make(map[rune]*Trie)} }
 
+// Insert a word with val to the trie.
 func (t *Trie) Insert(word string, val int) {
 	if word == "" {
 		t.Val = val
@@ -23,6 +25,7 @@ func (t *Trie) Insert(word string, val int) {
 	}
 }
 
+// Lookup a word's val from the trie.
 func (t *Trie) Lookup(word string) (val int, err error) {
 	if word == "" {
 		if t.Val != 0 {
@@ -35,4 +38,22 @@ func (t *Trie) Lookup(word string) (val int, err error) {
 		return child.Lookup(string(chars[1:]))
 	}
 	return 0, fmt.Errorf("undefined")
+}
+
+func (t *Trie) Traversal() map[string]int {
+	ret := make(map[string]int)
+	return traversal(t, "", ret)
+}
+
+func traversal(t *Trie, prefix string, tmpRet map[string]int) map[string]int {
+	if t == nil {
+		return tmpRet
+	}
+	if t.Val != 0 {
+		tmpRet[prefix] = t.Val
+	}
+	for k, v := range t.ChildRen {
+		tmpRet = traversal(v, prefix+string(k), tmpRet)
+	}
+	return tmpRet
 }
