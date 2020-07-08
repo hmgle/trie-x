@@ -40,20 +40,23 @@ func (t *Trie) Lookup(word string) (val int, err error) {
 	return 0, fmt.Errorf("undefined")
 }
 
-func (t *Trie) Traversal() map[string]int {
+func (t *Trie) Traversal(limit ...int) map[string]int {
 	ret := make(map[string]int)
-	return traversal(t, "", ret)
+	return traversal(t, "", ret, limit...)
 }
 
-func traversal(t *Trie, prefix string, tmpRet map[string]int) map[string]int {
+func traversal(t *Trie, prefix string, tmpRet map[string]int, limit ...int) map[string]int {
 	if t == nil {
+		return tmpRet
+	}
+	if len(limit) > 0 && len(tmpRet) >= limit[0] {
 		return tmpRet
 	}
 	if t.Val != 0 {
 		tmpRet[prefix] = t.Val
 	}
 	for k, v := range t.ChildRen {
-		tmpRet = traversal(v, prefix+string(k), tmpRet)
+		tmpRet = traversal(v, prefix+string(k), tmpRet, limit...)
 	}
 	return tmpRet
 }

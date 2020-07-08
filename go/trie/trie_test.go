@@ -26,7 +26,7 @@ func TestTrie(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
-	kvs := trie.Traversal()
+	kvs := trie.Traversal(2)
 	for k, v := range kvs {
 		t.Logf("k: %s, v: %d\n", k, v)
 	}
