@@ -60,3 +60,23 @@ func traversal(t *Trie, prefix string, tmpRet map[string]int, limit ...int) map[
 	}
 	return tmpRet
 }
+
+func (t *Trie) Expand(prefix string, limit ...int) map[string]int {
+	return t.expand(prefix, []rune(prefix), limit...)
+}
+
+func (t *Trie) expand(originPrefix string, prefix []rune, limit ...int) map[string]int {
+	if len(prefix) == 0 {
+		tmpRet := make(map[string]int)
+		ret := traversal(t, "", tmpRet, limit...)
+		retFix := make(map[string]int)
+		for k, v := range ret {
+			retFix[originPrefix+k] = v
+		}
+		return retFix
+	}
+	if child, ok := t.ChildRen[prefix[0]]; ok {
+		return child.expand(originPrefix, prefix[1:], limit...)
+	}
+	return nil
+}

@@ -30,4 +30,8 @@ func TestTrie(t *testing.T) {
 	for k, v := range kvs {
 		t.Logf("k: %s, v: %d\n", k, v)
 	}
+	expd := trie.Expand("汉")
+	for k := range expd {
+		t.Logf("expand('汉'): %s\n", k)
+	}
 }
