@@ -1,37 +1,49 @@
 package trie
 
 import (
+	"bufio"
+	"os"
 	"testing"
 )
 
-func TestTrie(t *testing.T) {
-	trie := New()
-	trie.Insert("abc", 1)
-	trie.Insert("bcx", 2)
-	trie.Insert("汉字", 3)
-	trie.Insert("汉服", 4)
+func buildTrieFromPath(path string) (tr *Trie, err error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	tr = New()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		tr.Insert(scanner.Text(), 1)
+	}
+	if err := scanner.Err(); err != nil {
+		return tr, err
+	}
+	return
+}
 
-	val, err := trie.Lookup("bcx")
-	t.Logf("val('bcx'): %v, err: %v\n", val, err)
-	if err != nil {
-		t.Fail()
+func TestTrie(t *testing.T) {
+	enWordTrie, _ := buildTrieFromPath("../../data/google-10000-english.txt")
+	badWordTrie, _ := buildTrieFromPath("../../data/bad-words-en.txt")
+	senWordTrie, _ := buildTrieFromPath("../../data/keyword-pool.txt")
+
+	expandTr := enWordTrie.Expand("qu", 10)
+	t.Logf("words of begin with `qu`, limit 10: \n")
+	for k := range expandTr {
+		t.Logf("%s\n", k)
 	}
-	val, err = trie.Lookup("ab")
-	t.Logf("val('ab'): %v, err: %v\n", val, err)
-	if err == nil {
-		t.Fail()
+	content := "近期发现为数不少的网络评论员及各大媒体网站删帖部门的工作人员"
+	hits := senWordTrie.ScanContent(content)
+	t.Logf("\n*sensitive words*: %s\n", content)
+	for _, hit := range hits {
+		t.Logf("%+v\n", hit)
 	}
-	val, err = trie.Lookup("汉服")
-	t.Logf("val('汉服'): %v, err: %v\n", val, err)
-	if err != nil {
-		t.Fail()
-	}
-	kvs := trie.Traversal()
-	for k, v := range kvs {
-		t.Logf("k: %s, v: %d\n", k, v)
-	}
-	expd := trie.Expand("汉")
-	for k := range expd {
-		t.Logf("expand('汉'): %s\n", k)
+
+	contentEn := "What does lemon party mean? In a brief filed ahead of oral arguments, the state argued that the law does not ban 18- to 20-year-old women from erotic dancing, which is protected under the First Amendment."
+	hits = badWordTrie.ScanContent(contentEn)
+	t.Logf("\n*sensitive words*: %s\n", contentEn)
+	for _, hit := range hits {
+		t.Logf("%+v\n", hit)
 	}
 }
