@@ -9,7 +9,7 @@ Multi-language's implementations of the `trie`. Features include **lookup**, **t
 - [X] Erlang
 - [ ] Elixir
 - [ ] Factor
-- [ ] Go
+- [X] Go
 - [ ] Haskell
 - [ ] Lisp
 - [ ] Nim
