@@ -39,4 +39,23 @@ defmodule Trie do
       false -> :undefined
     end
   end
+
+  def traversal(trie) do
+    traversal(trie, '', '')
+  end
+  defp traversal(trie, path, kvs) do
+    data = trie[:data]
+    case map_size(trie[:children]) do
+      0 -> case data do
+        nil -> kvs
+        _ -> kvs ++ [{path, data}]
+      end
+      _ -> case data do
+        nil -> kvs2 = kvs
+        _ -> kvs2 = [{path, data} | kvs]
+      end
+        children = trie[:children]
+        ## TODO
+    end
+  end
 end
