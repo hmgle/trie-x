@@ -46,44 +46,56 @@ defmodule Trie do
   defp traversal(trie, path, kvs) do
     data = trie[:data]
     case map_size(trie[:children]) do
-      0 -> case data do
-        nil -> kvs
-        _ -> kvs ++ [{path, data}]
-      end
-      _ -> case data do
-        nil -> kvs2 = kvs
-        _ -> kvs2 = [{path, data} | kvs]
-      end
+      0 ->
+        case data do
+          nil -> kvs
+          _ -> kvs ++ [{path, data}]
+        end
+      _ ->
         children = trie[:children]
-        List.foldl(Map.keys(children), kvs2, fn child, ret ->
-          ret ++ traversal(children[child], path ++ [child], '')
-        end)
+        case data do
+          nil ->
+            List.foldl(Map.keys(children), kvs, fn child, ret ->
+              ret ++ traversal(children[child], path ++ [child], '')
+            end)
+          _ ->
+            List.foldl(Map.keys(children), [{path, data} | kvs], fn child, ret ->
+              ret ++ traversal(children[child], path ++ [child], '')
+            end)
+        end
     end
   end
 
   def traversal_limit(trie, max_cnt) do
+    traversal_limit(trie, '', '', max_cnt, 0)
   end
   defp traversal_limit(_, _, kvs, max_cnt, cnt) when cnt >= max_cnt do
     {kvs, cnt}
   end
   defp traversal_limit(trie, path, kvs, max_cnt, cnt) do
-    data = trie[data]
-    case map_size(trie[children]) do
+    data = trie[:data]
+    case map_size(trie[:children]) do
       0 ->
         case data do
           nil -> {kvs, cnt}
           _ -> {kvs ++ [{path, data}], cnt + 1}
         end
       _ ->
+        children = trie[:children]
         case data do
-          nil -> cnt2 = cnt; kvs2 = kvs
-          _ -> cnt2 = cnt + 1; kvs2 = [{path, data} | kvs]
+          nil ->
+            cnt2 = cnt; kvs2 = kvs
+            List.foldl(Map.keys(children), {kvs2, cnt2}, fn child, ret ->
+              next = traversal_limit(children[child], path ++ [child], '', max_cnt, :erlang.element(2, ret))
+              {:erlang.element(1, ret) ++ :erlang.element(1, next), :erlang.element(2, next)}
+            end)
+          _ ->
+            cnt2 = cnt + 1; kvs2 = [{path, data} | kvs]
+            List.foldl(Map.keys(children), {kvs2, cnt2}, fn child, ret ->
+              next = traversal_limit(children[child], path ++ [child], '', max_cnt, :erlang.element(2, ret))
+              {:erlang.element(1, ret) ++ :erlang.element(1, next), :erlang.element(2, next)}
+            end)
         end
-        children = trie[children]
-        List.foldl(Map.keys(children), {kvs2, cnt2}, fn child, ret ->
-          next = traversal_limit(children[child], path ++ [child], '', max_cnt, :erlang.element(2, ret))
-          {:erlang.element(1, ret) ++ :erlang.element(1, next), :erlang.element(2, next)}
-        end)
     end
   end
 end
