@@ -98,4 +98,69 @@ defmodule Trie do
         end
     end
   end
+
+  def expand(trie, prefix, n) do
+    expand(trie, prefix, n, prefix)
+  end
+
+  defp add_prefix(ret, prefix) do
+    case ret do
+      :undefined ->
+        :undefined
+      {kvs, cnt} ->
+        kvs2 = Enum.map(kvs, fn {k, v} -> {prefix ++ k, v} end)
+        {kvs2, cnt}
+      _ ->
+        :undefined
+    end
+  end
+
+  defp expand(trie, '', n, prefix) do
+    add_prefix(traversal_limit(trie, n), prefix)
+  end
+  defp expand(trie, [k1 | kpai], n, prefix) do
+    child = trie[:children]
+    case Map.has_key?(child, k1) do
+      true -> expand(child[k1], kpai, n, prefix)
+      false -> :undefined
+    end
+  end
+
+  def scan_content(content, trie) do
+    case content do
+      [] -> ''
+      [H | T] -> Enum.reverse(scan_content([H], T, 0, trie, [], 0))
+    end
+  end
+  defp scan_content(k, '', _, trie, ret, offset) do
+    case lookup(trie, k) do
+      :undefined -> ret
+      nil -> ret
+      data -> [{{k, data}, offset} | ret]
+    end
+  end
+  defp scan_content(k, remain, offset_remain, trie, ret, offset) when length(remain) > offset_remain do
+    case lookup(trie, k) do
+      :undefined ->
+        [remain_h | remain_t] = remain
+        scan_content([remain_h], remain_t, 0, trie, ret, offset + 1)
+      nil ->
+        scan_content(k ++ [Enum.at(remain, offset_remain)], remain, offset_remain + 1, trie, ret, offset)
+      data ->
+        ret2 = [{{k, data}, offset} | ret]
+        scan_content(k ++ [Enum.at(remain, offset_remain)], remain, offset_remain + 1, trie, ret2, offset)
+    end
+  end
+  defp scan_content(k, remain, _offset_remain, trie, ret, offset) do
+    [remain_h | remain_t] = remain
+    case lookup(trie, k) do
+      :undefined ->
+        scan_content([remain_h], remain_t, 0, trie, ret, offset + 1)
+      nil ->
+        scan_content([remain_h], remain_t, 0, trie, ret, offset + 1)
+      data ->
+        ret2 = [{{k, data}, offset} | ret]
+        scan_content([remain_h], remain_t, 0, trie, ret2, offset + 1)
+    end
+  end
 end
