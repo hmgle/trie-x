@@ -2,7 +2,7 @@ defmodule TrieTest do
   use ExUnit.Case
   doctest Trie
 
-  test "greets the world" do
-    assert Trie.hello() == :world
+  test "new trie" do
+    assert Trie.new() == %Trie{children: %{}, data: nil}
   end
 end

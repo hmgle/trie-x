@@ -4,12 +4,12 @@ defmodule Trie do
   """
 
   @doc """
-  Hello world.
+  Create the `Trie` data structure.
 
   ## Examples
 
-      iex> Trie.hello()
-      :world
+      iex> Trie.new()
+      %Trie{children: %{}, data: nil}
 
   """
   defstruct children: %{}, data: nil
