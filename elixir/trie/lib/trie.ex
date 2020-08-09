@@ -22,18 +22,18 @@ defmodule Trie do
     Map.put(trie, :data, data)
   end
   def insert(trie, [k1 | kpai], data) do
-    child = trie[:children]
+    child = trie.children
     case Map.has_key?(child, k1) do
-      true -> Map.put(trie, k1, insert(child[k1], kpai, data))
-      false -> Map.put(trie, k1, insert(new(), kpai, data))
+      true -> Map.put(trie, :children, Map.put(child, k1, insert(child[k1], kpai, data)))
+      false -> Map.put(trie, :children, Map.put(child, k1, insert(new(), kpai, data)))
     end
   end
 
   def lookup(trie, []) do
-    trie[:data]
+    trie.data
   end
   def lookup(trie, [k1 | kpai]) do
-    child = trie[:children]
+    child = trie.children
     case Map.has_key?(child, k1) do
       true -> lookup(child[k1], kpai)
       false -> :undefined
@@ -44,15 +44,15 @@ defmodule Trie do
     traversal(trie, '', '')
   end
   defp traversal(trie, path, kvs) do
-    data = trie[:data]
-    case map_size(trie[:children]) do
+    data = trie.data
+    case map_size(trie.children) do
       0 ->
         case data do
           nil -> kvs
           _ -> kvs ++ [{path, data}]
         end
       _ ->
-        children = trie[:children]
+        children = trie.children
         case data do
           nil ->
             List.foldl(Map.keys(children), kvs, fn child, ret ->
@@ -73,15 +73,15 @@ defmodule Trie do
     {kvs, cnt}
   end
   defp traversal_limit(trie, path, kvs, max_cnt, cnt) do
-    data = trie[:data]
-    case map_size(trie[:children]) do
+    data = trie.data
+    case map_size(trie.children) do
       0 ->
         case data do
           nil -> {kvs, cnt}
           _ -> {kvs ++ [{path, data}], cnt + 1}
         end
       _ ->
-        children = trie[:children]
+        children = trie.children
         case data do
           nil ->
             cnt2 = cnt; kvs2 = kvs
@@ -119,7 +119,7 @@ defmodule Trie do
     add_prefix(traversal_limit(trie, n), prefix)
   end
   defp expand(trie, [k1 | kpai], n, prefix) do
-    child = trie[:children]
+    child = trie.children
     case Map.has_key?(child, k1) do
       true -> expand(child[k1], kpai, n, prefix)
       false -> :undefined
@@ -129,7 +129,7 @@ defmodule Trie do
   def scan_content(content, trie) do
     case content do
       [] -> ''
-      [H | T] -> Enum.reverse(scan_content([H], T, 0, trie, [], 0))
+      [h | t] -> Enum.reverse(scan_content([h], t, 0, trie, [], 0))
     end
   end
   defp scan_content(k, '', _, trie, ret, offset) do
