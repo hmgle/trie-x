@@ -123,11 +123,12 @@ func (t *Trie) scanContent(k, remain []rune, offsetRemain int, ret *[]HitMeta, o
 		return
 	}
 	if len(remain) > offsetRemain {
-		if err == ErrUndefined {
+		switch err {
+		case ErrUndefined:
 			t.scanContent(remain[:1], remain[1:], 0, ret, offset+1)
-		} else if err == ErrNull {
+		case ErrNull:
 			t.scanContent(append(k, remain[offsetRemain]), remain, offsetRemain+1, ret, offset)
-		} else {
+		default:
 			*ret = append(*ret, HitMeta{
 				Word:   string(k),
 				Val:    val,
@@ -147,5 +148,4 @@ func (t *Trie) scanContent(k, remain []rune, offsetRemain int, ret *[]HitMeta, o
 			t.scanContent(remain[:1], remain[1:], 0, ret, offset+1)
 		}
 	}
-	return
 }
