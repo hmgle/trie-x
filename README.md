@@ -6,15 +6,16 @@ Multi-language's implementations of the `trie`. Features include **lookup**, **t
 
 - [ ] C
 - [ ] Crystal
-- [X] Erlang
-- [X] Elixir
+- [x] Erlang
+- [x] Elixir
 - [ ] Factor
-- [X] Go
+- [x] Go
 - [ ] Haskell
 - [ ] Lisp
 - [ ] Nim
 - [ ] Python3
 - [ ] Rust
+- [x] Zig
 - [ ] ...
 
 Contributions are welcome!

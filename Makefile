@@ -11,3 +11,6 @@ test_erlang::
 
 test_elixir::
 	$(MAKE) -C elixir/trie test
+
+test_zig::
+	$(MAKE) -C zig/ test

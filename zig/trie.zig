@@ -188,3 +188,72 @@ pub const Trie = struct {
         }
     }
 };
+
+fn buildTrieFromPath(file_path: []const u8, allocator: std.mem.Allocator) !*Trie {
+    const file = try std.fs.cwd().openFile(file_path, .{});
+    defer file.close();
+
+    var buf_reader = std.io.bufferedReader(file.reader());
+    var in_stream = buf_reader.reader();
+
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allcator = arena.allocator();
+
+    var trie = Trie.init(allocator);
+
+    while (try in_stream.readUntilDelimiterOrEofAlloc(allcator, '\n', 1024)) |line| {
+        try trie.insert(line, 1);
+    }
+    return trie;
+}
+
+test "trie" {
+    const allocator = std.testing.allocator;
+    const en_word_trie = try buildTrieFromPath("../data/google-10000-english.txt", allocator);
+    defer en_word_trie.deinit();
+    const sen_word_trie = try buildTrieFromPath("../data/keyword-pool.txt", allocator);
+    defer sen_word_trie.deinit();
+    const bad_word_trie = try buildTrieFromPath("../data/bad-words-en.txt", allocator);
+    defer bad_word_trie.deinit();
+
+    var expand_tr = en_word_trie.expand("qu", 10) catch unreachable;
+    defer {
+        var eit = expand_tr.?.keyIterator();
+        while (eit.next()) |key| {
+            allocator.free(key.*);
+        }
+        expand_tr.?.deinit();
+    }
+    var eit = expand_tr.?.iterator();
+    std.debug.print("words of begin with `qu`, limit 10: \n", .{});
+    while (eit.next()) |entry| {
+        std.debug.print("{s}\n", .{entry.key_ptr.*});
+    }
+
+    const content = "近期发现为数不少的网络评论员及各大媒体网站删帖部门的工作人员";
+    const hits = try sen_word_trie.scanContent(content);
+    defer {
+        for (hits) |hit| {
+            allocator.free(hit.word);
+        }
+        allocator.free(hits);
+    }
+    std.debug.print("\n*sensitive words*: {s}\n", .{content});
+    for (hits) |hit| {
+        std.debug.print("word: {s}, val: {} offset: {}\n", .{ hit.word, hit.val, hit.offset });
+    }
+
+    const content_en = "What does lemon party mean? In a brief filed ahead of oral arguments, the state argued that the law does not ban 18- to 20-year-old women from erotic dancing, which is protected under the First Amendment.";
+    const hits_en = try bad_word_trie.scanContent(content_en);
+    defer {
+        for (hits_en) |hit| {
+            allocator.free(hit.word);
+        }
+        allocator.free(hits_en);
+    }
+    std.debug.print("\n*sensitive words*: {s}\n", .{content_en});
+    for (hits_en) |hit| {
+        std.debug.print("word: {s}, val: {} offset: {}\n", .{ hit.word, hit.val, hit.offset });
+    }
+}
