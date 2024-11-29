@@ -1,4 +1,4 @@
-from typing import Dict, List, Generator, Optional, Tuple
+from typing import Dict, Generator, Optional, Tuple
 from itertools import islice
 import os
 
@@ -68,48 +68,45 @@ class Trie:
         if node:
             yield from ((prefix + key, value) for key, value in node.traversal())
 
-    def scan_content(self, content: str) -> List[HitMeta]:
+    def scan_content(self, content: str) -> Generator[HitMeta, None, None]:
         """
         Scans the given content and finds all matching words with their values and positions.
         """
         if not content:
-            return []
+            return
 
-        hits: List[HitMeta] = []
-        self._scan_content(content[:1], content[1:], 0, hits, 0)
-        return hits
+        yield from self._scan_content(content[:1], content[1:], 0, 0)
 
     def _scan_content(
         self,
         k: str,
         remain: str,
         offset_remain: int,
-        ret: List[HitMeta],
         offset: int,
-    ) -> None:
+    ) -> Generator[HitMeta, None, None]:
         val, err = self.lookup(k)
         if not remain:
             if err is None:  # Valid word found
-                ret.append(HitMeta(word=k, val=val, offset=offset))
+                yield HitMeta(word=k, val=val, offset=offset)
             return
         if len(remain) > offset_remain:
             if err == "undefined":
-                self._scan_content(remain[:1], remain[1:], 0, ret, offset + 1)
+                yield from self._scan_content(remain[:1], remain[1:], 0, offset + 1)
             elif err == "null":
-                self._scan_content(
-                    k + remain[offset_remain], remain, offset_remain + 1, ret, offset
+                yield from self._scan_content(
+                    k + remain[offset_remain], remain, offset_remain + 1, offset
                 )
             else:
-                ret.append(HitMeta(word=k, val=val, offset=offset))
-                self._scan_content(
-                    k + remain[offset_remain], remain, offset_remain + 1, ret, offset
+                yield HitMeta(word=k, val=val, offset=offset)
+                yield from self._scan_content(
+                    k + remain[offset_remain], remain, offset_remain + 1, offset
                 )
         else:
             if err is not None:
-                self._scan_content(remain[:1], remain[1:], 0, ret, offset + 1)
+                yield from self._scan_content(remain[:1], remain[1:], 0, offset + 1)
             else:
-                ret.append(HitMeta(word=k, val=val, offset=offset))
-                self._scan_content(remain[:1], remain[1:], 0, ret, offset + 1)
+                yield HitMeta(word=k, val=val, offset=offset)
+                yield from self._scan_content(remain[:1], remain[1:], 0, offset + 1)
 
     @staticmethod
     def build_trie_from_path(path: str) -> Optional["Trie"]:
@@ -142,9 +139,8 @@ if __name__ == "__main__":
         print("Error: Trie not built.")
     else:
         content = "近期发现为数不少的网络评论员及各大媒体网站删帖部门的工作人员"
-        hits = senword_trie.scan_content(content)
         print("\nSensitive Words:", content)
-        for hit in hits:
+        for hit in senword_trie.scan_content(content):
             print(hit)
 
     badword_trie = Trie.build_trie_from_path("../../data/bad-words-en.txt")
@@ -152,7 +148,6 @@ if __name__ == "__main__":
         print("Error: Trie not built.")
     else:
         content_en = "What does lemon party mean? In a brief filed ahead of oral arguments, the state argued that the law does not ban 18- to 20-year-old women from erotic dancing, which is protected under the First Amendment."
-        hits = badword_trie.scan_content(content_en)
         print("\nSensitive Words:", content_en)
-        for hit in hits:
+        for hit in badword_trie.scan_content(content_en):
             print(hit)
