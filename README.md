@@ -13,7 +13,7 @@ Multi-language's implementations of the `trie`. Features include **lookup**, **t
 - [ ] Haskell
 - [ ] Lisp
 - [ ] Nim
-- [ ] Python3
+- [x] Python
 - [ ] Rust
 - [x] Zig
 - [ ] ...
