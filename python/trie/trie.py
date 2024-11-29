@@ -65,7 +65,8 @@ class Trie:
             return None
 
         node = find_node(self, prefix)
-        yield from node.traversal() if node else ()
+        if node:
+            yield from ((prefix + key, value) for key, value in node.traversal())
 
     def scan_content(self, content: str) -> List[HitMeta]:
         """
@@ -132,6 +133,7 @@ if __name__ == "__main__":
     if enword_trie is None:
         print("Error: Trie not built.")
     else:
+        print("words of begin with `qu`, limit 10:")
         for word, _ in islice(enword_trie.expand("qu"), 10):
             print(word)
 
@@ -141,8 +143,7 @@ if __name__ == "__main__":
     else:
         content = "近期发现为数不少的网络评论员及各大媒体网站删帖部门的工作人员"
         hits = senword_trie.scan_content(content)
-        print("\nSensitive Words:")
-        print(content)
+        print("\nSensitive Words:", content)
         for hit in hits:
             print(hit)
 
@@ -152,7 +153,6 @@ if __name__ == "__main__":
     else:
         content_en = "What does lemon party mean? In a brief filed ahead of oral arguments, the state argued that the law does not ban 18- to 20-year-old women from erotic dancing, which is protected under the First Amendment."
         hits = badword_trie.scan_content(content_en)
-        print(content_en)
-        print("\nSensitive Words:")
+        print("\nSensitive Words:", content_en)
         for hit in hits:
             print(hit)
